@@ -273,6 +273,11 @@ open class KeyDef(
             val action: KeyAction
         ) : Behavior()
 
+        class SwipeHorizontal(
+            val leftAction: KeyAction,
+            val rightAction: KeyAction
+        ) : Behavior()
+
         class DoubleTap(
             val action: KeyAction
         ) : Behavior()

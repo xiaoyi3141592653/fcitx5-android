@@ -1743,6 +1743,47 @@ abstract class BaseKeyboard(
                         } || oldOnGestureListener.onGesture(currentView, event)
                     }
                 }
+                is KeyDef.Behavior.SwipeHorizontal -> {
+                    view.swipeEnabled = true
+                    view.swipeThresholdX = inputSwipeThreshold
+                    view.swipeThresholdY = inputSwipeThreshold
+                    val oldOnGestureListener = view.onGestureListener ?: OnGestureListener.Empty
+                    // Lock swipe axis on first trigger to disambiguate horizontal swipe
+                    // from the existing vertical (down) swipe behavior
+                    var lockedAxis: SwipeAxis? = null
+                    var horizontalTriggered = false
+                    view.onGestureListener = OnGestureListener { currentView, event ->
+                        when (event.type) {
+                            GestureType.Move -> {
+                                if (horizontalTriggered) return@OnGestureListener true
+                                if (lockedAxis == null) {
+                                    if (event.totalX != 0 && kotlin.math.abs(event.totalX) >= kotlin.math.abs(event.totalY)) {
+                                        lockedAxis = SwipeAxis.X
+                                    } else if (event.totalY != 0 && kotlin.math.abs(event.totalY) > kotlin.math.abs(event.totalX)) {
+                                        lockedAxis = SwipeAxis.Y
+                                    }
+                                }
+                                if (lockedAxis == SwipeAxis.X && event.countX != 0) {
+                                    horizontalTriggered = true
+                                    val action = if (event.totalX > 0) it.rightAction else it.leftAction
+                                    onAction(action)
+                                    InputFeedbacks.hapticFeedback(currentView)
+                                    true
+                                } else {
+                                    false
+                                }
+                            }
+                            GestureType.Up -> {
+                                val wasTriggered = horizontalTriggered
+                                // reset state for next gesture
+                                lockedAxis = null
+                                horizontalTriggered = false
+                                wasTriggered
+                            }
+                            else -> false
+                        } || oldOnGestureListener.onGesture(currentView, event)
+                    }
+                }
                 is KeyDef.Behavior.DoubleTap -> {
                     view.doubleTapEnabled = true
                     view.onDoubleTapListener = { _ ->

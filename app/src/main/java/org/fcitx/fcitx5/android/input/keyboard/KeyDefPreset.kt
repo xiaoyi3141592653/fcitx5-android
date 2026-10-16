@@ -111,7 +111,18 @@ class AlphabetKey(
     setOf(
         Behavior.Press(KeyAction.FcitxKeyAction(character)),
         Behavior.Swipe(KeyAction.FcitxKeyAction(punctuation))
-    ),
+    ) + buildList {
+        // Horizontal swipe: left -> main character, right -> second character of displayText
+        val second = displayText.getOrNull(1)
+        if (second != null && !second.isWhitespace() && second.toString() != character) {
+            add(
+                Behavior.SwipeHorizontal(
+                    leftAction = KeyAction.FcitxKeyAction(character),
+                    rightAction = KeyAction.FcitxKeyAction(second.toString())
+                )
+            )
+        }
+    }.toSet(),
     popup ?: arrayOf(
         Popup.AltPreview(character, punctuation),
         Popup.Keyboard.Preset(character)

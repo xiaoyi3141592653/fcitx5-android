@@ -1,0 +1,8 @@
+# VS Code Java 扩展配置 - 指向独立安装的 Temurin JDK 17
+java.configuration.runtimes:
+  - name: JavaSE-17
+    path: /Users/lixiaoyi/jdk/jdk-17.0.20.1+1/Contents/Home
+    default: true
+
+# Gradle for Java 扩展使用的 JDK
+java.import.gradle.java.home: /Users/lixiaoyi/jdk/jdk-17.0.20.1+1/Contents/Home
