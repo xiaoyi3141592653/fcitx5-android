@@ -1547,6 +1547,7 @@ class TextKeyboard(
             if (keyDef is KeyDef.Appearance.AltText) {
                 val renderedText = it.mainText.text.toString()
                 val sourceFromDef = renderedText.isEmpty() || renderedText == keyDef.displayText
+                    || renderedText.equals(keyDef.displayText, ignoreCase = true)
                     || renderedText.equals(keyDef.character, ignoreCase = true)
                 val displayText = if (sourceFromDef) keyDef.displayText else renderedText
                 val character = keyDef.character
@@ -1554,6 +1555,7 @@ class TextKeyboard(
                     && (displayText[0] in 'A'..'Z' || displayText[0] in 'a'..'z')
                 val characterIsSingleLetter = sourceFromDef && character.length == 1
                     && (character[0] in 'A'..'Z' || character[0] in 'a'..'z')
+                val displayHasLetter = displayText.any { it.isLetter() }
 
                 it.mainText.text = when {
                     keepLettersUppercase && displayIsSingleLetter -> displayText.uppercase()
@@ -1561,6 +1563,9 @@ class TextKeyboard(
                     !displayUppercase && displayIsSingleLetter -> displayText.lowercase()
                     !displayUppercase -> displayText
                     displayIsSingleLetter -> displayText.uppercase()
+                    // Caps on with multi-char displayText (e.g. "QW"): uppercase the
+                    // whole displayText instead of falling back to the main character
+                    displayHasLetter -> displayText.uppercase()
                     characterIsSingleLetter -> character.uppercase()
                     else -> displayText
                 }
